@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+  }
+  ::selection {
+    @apply bg-coral-500/20;
+  }
+  *:focus-visible {
+    @apply outline-none ring-2 ring-indigo-600 ring-offset-2 ring-offset-paper;
+  }
+}
