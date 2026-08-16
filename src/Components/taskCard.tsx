@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Pencil, RotateCcw, Trash2, XCircle } from 'lucide-react'
+import { CheckCircle2, Circle, Image, Link2, Pencil, RotateCcw, Trash2, XCircle } from 'lucide-react'
 import type { Task } from '../types'
 
 interface TaskCardProps {
@@ -45,10 +45,37 @@ export default function TaskCard({
         >
           {task.taskName}
         </h3>
-        {task.taskDescription && (
-          <p className={`mt-1 break-words text-sm text-ink/60 ${task.isDone ? 'line-through' : ''}`}>
-            {task.taskDescription}
-          </p>
+        {task.subtasks && task.subtasks.length > 0 && (
+          <ul className="mt-1.5 space-y-1">
+            {task.subtasks.map((subtask) => (
+              <li key={subtask.id} className={`text-sm text-ink/60 ${task.isDone ? 'line-through' : ''}`}>
+                <div className="flex items-start gap-1.5">
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/30" />
+                  <div className="min-w-0">
+                    {subtask.name && <span className="break-words font-medium text-ink/70">{subtask.name}</span>}
+                    {subtask.name && subtask.description && ' — '}
+                    {subtask.description && <span className="break-words">{subtask.description}</span>}
+                    {subtask.attachments.length > 0 && (
+                      <span className="ml-1.5 inline-flex items-center gap-1.5 align-middle">
+                        {subtask.attachments.map((attachment) => (
+                          <a
+                            key={attachment.id}
+                            href={attachment.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-ink/40 hover:text-indigo-700"
+                            aria-label={attachment.type === 'link' ? 'Open link' : 'Open image'}
+                          >
+                            {attachment.type === 'link' ? <Link2 size={13} /> : <Image size={13} />}
+                          </a>
+                        ))}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 
