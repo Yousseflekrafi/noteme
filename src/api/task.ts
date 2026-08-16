@@ -1,21 +1,62 @@
 import { api } from './client'
-import type { Task, TaskDraft } from '../types'
+import type { Subtask, Task, TaskDraft } from '../types'
 
 const base = (userId: string) => `/users/${userId}/tasks`
 
-export const tasksApi = {
-  list: (userId: string) => api.get<Task[]>(base(userId)),
+// MockAPI's free tier only supports flat fields, so subtasks (with their
+// nested attachments) are stored as a JSON string and decoded on the way in.
+interface RawTask {
+  id: string
+  userId: string
+  taskName: string
+  subtasks?: string
+  isDone: boolean
+  isDeleted: boolean
+  createdAt?: string
+}
 
-  create: (userId: string, draft: TaskDraft) =>
-    api.post<Task>(base(userId), {
+const parseSubtasks = (raw?: string): Subtask[] => {
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+const toTask = (raw: RawTask): Task => ({
+  ...raw,
+  subtasks: parseSubtasks(raw.subtasks),
+})
+
+type TaskChanges = Partial<Omit<Task, 'subtasks'>> & { subtasks?: Subtask[] }
+
+const encodeChanges = (changes: TaskChanges) => {
+  const { subtasks, ...rest } = changes
+  return subtasks !== undefined ? { ...rest, subtasks: JSON.stringify(subtasks) } : rest
+}
+
+export const tasksApi = {
+  list: async (userId: string) => {
+    const data = await api.get<RawTask[]>(base(userId))
+    return data.map(toTask)
+  },
+
+  create: async (userId: string, draft: TaskDraft) => {
+    const created = await api.post<RawTask>(base(userId), {
       taskName: draft.taskName,
-      subtasks: draft.subtasks,
+      subtasks: JSON.stringify(draft.subtasks),
       isDone: draft.isDone ?? false,
       isDeleted: false,
-    }),
+    })
+    return toTask(created)
+  },
 
-  update: (userId: string, taskId: string, changes: Partial<Task>) =>
-    api.put<Task>(`${base(userId)}/${taskId}`, changes),
+  update: async (userId: string, taskId: string, changes: TaskChanges) => {
+    const updated = await api.put<RawTask>(`${base(userId)}/${taskId}`, encodeChanges(changes))
+    return toTask(updated)
+  },
 
   setDone: (userId: string, taskId: string, isDone: boolean) =>
     tasksApi.update(userId, taskId, { isDone }),
