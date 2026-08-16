@@ -9,7 +9,7 @@ export const tasksApi = {
   create: (userId: string, draft: TaskDraft) =>
     api.post<Task>(base(userId), {
       taskName: draft.taskName,
-      taskDescription: draft.taskDescription,
+      subtasks: draft.subtasks,
       isDone: draft.isDone ?? false,
       isDeleted: false,
     }),
