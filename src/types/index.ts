@@ -20,6 +20,7 @@ export interface Subtask {
   id: string
   name: string
   description: string
+  isDone: boolean
   attachments: Attachment[]
 }
 

@@ -91,6 +91,13 @@ export default function Tasks({ view }: { view: TaskView }) {
   const handleToggleDone = (task: Task) =>
     withBusy(task, () => tasksApi.setDone(user.id, task.id, !task.isDone))
 
+  const handleToggleSubtask = (task: Task, subtaskId: string) =>
+    withBusy(task, () =>
+      tasksApi.update(user.id, task.id, {
+        subtasks: task.subtasks.map((s) => (s.id === subtaskId ? { ...s, isDone: !s.isDone } : s)),
+      }),
+    )
+
   const handleSoftDelete = (task: Task) =>
     withBusy(task, () => tasksApi.softDelete(user.id, task.id))
 
@@ -165,6 +172,7 @@ export default function Tasks({ view }: { view: TaskView }) {
               task={task}
               busy={busyId === task.id}
               onToggleDone={view !== 'deleted' ? handleToggleDone : undefined}
+              onToggleSubtask={view !== 'deleted' ? handleToggleSubtask : undefined}
               onEdit={view !== 'deleted' ? openEdit : undefined}
               onDelete={view !== 'deleted' ? handleSoftDelete : undefined}
               onRestore={view === 'deleted' ? handleRestore : undefined}
