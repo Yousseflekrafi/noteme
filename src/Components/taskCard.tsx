@@ -4,6 +4,7 @@ import type { Task } from '../types'
 interface TaskCardProps {
   task: Task
   onToggleDone?: (task: Task) => void
+  onToggleSubtask?: (task: Task, subtaskId: string) => void
   onEdit?: (task: Task) => void
   onDelete?: (task: Task) => void
   onRestore?: (task: Task) => void
@@ -14,6 +15,7 @@ interface TaskCardProps {
 export default function TaskCard({
   task,
   onToggleDone,
+  onToggleSubtask,
   onEdit,
   onDelete,
   onRestore,
@@ -48,9 +50,28 @@ export default function TaskCard({
         {task.subtasks && task.subtasks.length > 0 && (
           <ul className="mt-1.5 space-y-1">
             {task.subtasks.map((subtask) => (
-              <li key={subtask.id} className={`text-sm text-ink/60 ${task.isDone ? 'line-through' : ''}`}>
+              <li
+                key={subtask.id}
+                className={`text-sm text-ink/60 ${task.isDone || subtask.isDone ? 'line-through' : ''}`}
+              >
                 <div className="flex items-start gap-1.5">
-                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/30" />
+                  {onToggleSubtask ? (
+                    <button
+                      type="button"
+                      aria-label={subtask.isDone ? 'Mark subtask as open' : 'Mark subtask as done'}
+                      onClick={() => onToggleSubtask(task, subtask.id)}
+                      disabled={busy}
+                      className="mt-0.5 shrink-0 text-moss-500 hover:text-moss-600 disabled:cursor-not-allowed"
+                    >
+                      {subtask.isDone ? (
+                        <CheckCircle2 size={15} />
+                      ) : (
+                        <Circle size={15} className="text-ink/25" />
+                      )}
+                    </button>
+                  ) : (
+                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/30" />
+                  )}
                   <div className="min-w-0">
                     {subtask.name && <span className="break-words font-medium text-ink/70">{subtask.name}</span>}
                     {subtask.name && subtask.description && ' — '}

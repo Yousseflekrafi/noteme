@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Image, Link2, Plus, Trash2, X } from 'lucide-react'
+import { CheckCircle2, Circle, Image, Link2, Plus, Trash2, X } from 'lucide-react'
 import type { Attachment, Subtask, Task, TaskDraft } from '../types'
 
 interface TaskModalProps {
@@ -13,6 +13,7 @@ const emptySubtask = (): Subtask => ({
   id: crypto.randomUUID(),
   name: '',
   description: '',
+  isDone: false,
   attachments: [],
 })
 
@@ -128,11 +129,21 @@ export default function TaskModal({ open, onClose, onSubmit, initialTask }: Task
             {subtasks.map((subtask, index) => (
               <div key={subtask.id} className="rounded-lg border border-ink/15 p-3.5">
                 <div className="mb-2.5 flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    aria-label={subtask.isDone ? 'Mark subtask as open' : 'Mark subtask as done'}
+                    onClick={() => updateSubtask(subtask.id, { isDone: !subtask.isDone })}
+                    className="shrink-0 text-moss-500 hover:text-moss-600"
+                  >
+                    {subtask.isDone ? <CheckCircle2 size={19} /> : <Circle size={19} className="text-ink/25" />}
+                  </button>
                   <input
                     value={subtask.name}
                     onChange={(e) => updateSubtask(subtask.id, { name: e.target.value })}
                     placeholder={`Subtask ${index + 1} name`}
-                    className="w-full rounded-md border border-ink/15 px-3 py-2 text-sm text-ink placeholder:text-ink/35 focus:border-indigo-600"
+                    className={`w-full rounded-md border border-ink/15 px-3 py-2 text-sm text-ink placeholder:text-ink/35 focus:border-indigo-600 ${
+                      subtask.isDone ? 'text-ink/40 line-through' : ''
+                    }`}
                   />
                   {subtasks.length > 1 && (
                     <button
